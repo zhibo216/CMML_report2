@@ -1,9 +1,3 @@
-# PBMC10k Ambient RNA Contamination Benchmark
-
-This repository contains the analysis workflow for **CMML3 Miniproject 8: Benchmarking ambient RNA detection and correction methods in single-cell RNA-seq data**. The project uses the 10x Genomics PBMC10k dataset to simulate ambient RNA contamination, evaluate DecontX on simulated called-cell matrices, and compare CellBender output with the Cell Ranger filtered baseline.
-
-The scripts are intended to be run in numerical order. Earlier scripts generate intermediate files that are required by later steps.
-
 ## Project aims
 
 This workflow addresses three main questions:
@@ -14,35 +8,8 @@ This workflow addresses three main questions:
 
 DecontX and CellBender are evaluated in complementary settings rather than as a direct head-to-head comparison. DecontX is tested on simulated contaminated called-cell matrices with an operational clean reference. CellBender is applied to raw droplet data and compared with the Cell Ranger filtered baseline because it requires empty-droplet information.
 
-## Recommended project structure
 
-Place all scripts in a `scripts` directory under the project root. The scripts use the parent directory of `scripts` as the project root.
 
-```text
-project8_ambientRNA
-├── scripts
-│   ├── 00_check_pbmc10k.py
-│   ├── 01_qc_preprocess.py
-│   ├── 02_simulate_ambientRNA.py
-│   ├── 03_validate_simulation_no_correction.py
-│   ├── 04_export_decontx_inputs.py
-│   ├── 05_run_decontx_optimized.R
-│   ├── 06_benchmark_decontx_quick.py
-│   ├── 07_plot_decontx_contamination_estimate.py
-│   ├── 08_umap_clustering_impact.py
-│   └── 09_benchmark_cellbender.py
-├── data
-│   ├── raw
-│   │   └── pbmc10k
-│   ├── processed
-│   ├── simulated
-│   ├── decontx_input
-│   └── decontx_output
-└── results
-    ├── tables
-    ├── figures
-    └── cellbender_final
-```
 
 ## Input data
 
@@ -407,12 +374,3 @@ For DecontX, the main benchmark should be interpreted using multiple metrics. A 
 
 For CellBender, the comparison is made against the Cell Ranger filtered baseline rather than a true clean ground truth. The results should therefore be interpreted as evidence of background removal and structure preservation, not as a direct ranking against DecontX.
 
-## Notes and troubleshooting
-
-1. Keep the scripts inside the `scripts` directory. The Python scripts locate the project root by moving one level up from the script directory.
-2. Run the R script from the project root so that it can find `data/decontx_input`.
-3. Run `01_qc_preprocess.py` before any simulation step because later scripts require `data/processed/pbmc10k_clean_baseline.h5ad`.
-4. Run `04_export_decontx_inputs.py` before `05_run_decontx_optimized.R`.
-5. Run `06_benchmark_decontx_quick.py` before `07_plot_decontx_contamination_estimate.py`.
-6. Run `09_benchmark_cellbender.py` only after the CellBender output file has been generated and placed in `results/cellbender_final`.
-7. If a script cannot find an expected file, first check that all earlier scripts completed successfully and that the project directory structure matches the layout shown above.
