@@ -1,9 +1,7 @@
 from pathlib import Path
 import scanpy as sc
 
-# -----------------------------
-# 1. Set paths
-# -----------------------------
+
 base_dir = Path(__file__).resolve().parents[1]
 
 filtered_path = (
@@ -23,9 +21,6 @@ figure_dir.mkdir(parents=True, exist_ok=True)
 sc.settings.figdir = figure_dir
 sc.settings.verbosity = 3
 
-# -----------------------------
-# 2. Read filtered matrix
-# -----------------------------
 print("Reading filtered PBMC10k matrix...")
 adata = sc.read_10x_h5(filtered_path)
 adata.var_names_make_unique()
@@ -34,9 +29,7 @@ adata.obs_names_make_unique()
 print("Initial AnnData:")
 print(adata)
 
-# -----------------------------
-# 3. QC metrics
-# -----------------------------
+
 adata.var["mt"] = adata.var_names.str.upper().str.startswith("MT-")
 
 sc.pp.calculate_qc_metrics(
@@ -61,9 +54,6 @@ sc.pl.violin(
     show=False,
 )
 
-# -----------------------------
-# 4. Filter low-quality cells and genes
-# -----------------------------
 print("\nFiltering cells...")
 
 adata = adata[adata.obs["n_genes_by_counts"] >= 200, :].copy()
@@ -84,9 +74,7 @@ adata.obs.to_csv(processed_dir / "pbmc10k_qc_metrics_after_filtering.csv")
 # This layer will be used later for ambient RNA simulation.
 adata.layers["counts"] = adata.X.copy()
 
-# -----------------------------
-# 5. Normalize and log-transform
-# -----------------------------
+
 print("\nNormalizing and log-transforming...")
 
 sc.pp.normalize_total(adata, target_sum=1e4)
@@ -94,9 +82,6 @@ sc.pp.log1p(adata)
 
 adata.raw = adata
 
-# -----------------------------
-# 6. Highly variable genes
-# -----------------------------
 print("\nSelecting highly variable genes...")
 
 sc.pp.highly_variable_genes(
@@ -105,9 +90,6 @@ sc.pp.highly_variable_genes(
     flavor="seurat",
 )
 
-# -----------------------------
-# 7. PCA, neighbors, UMAP, Leiden clustering
-# -----------------------------
 print("\nRunning PCA...")
 sc.pp.pca(
     adata,
@@ -132,9 +114,6 @@ sc.tl.leiden(
     key_added="leiden",
 )
 
-# -----------------------------
-# 8. Plot UMAP
-# -----------------------------
 sc.pl.umap(
     adata,
     color=["leiden", "total_counts", "n_genes_by_counts", "pct_counts_mt"],
@@ -142,9 +121,6 @@ sc.pl.umap(
     show=False,
 )
 
-# -----------------------------
-# 9. Marker genes
-# -----------------------------
 print("\nFinding marker genes...")
 
 sc.tl.rank_genes_groups(
@@ -167,9 +143,6 @@ sc.pl.rank_genes_groups(
     show=False,
 )
 
-# -----------------------------
-# 10. Save clean baseline
-# -----------------------------
 output_path = processed_dir / "pbmc10k_clean_baseline.h5ad"
 adata.write_h5ad(output_path)
 
